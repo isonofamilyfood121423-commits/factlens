@@ -1,0 +1,25 @@
+---
+const today = new Date();
+const w = ['日','月','火','水','木','金','土'][today.getDay()];
+const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日(${w})`;
+const cats = ['国内','国際','経済','テクノロジー','解説'];
+---
+<div class="topbar">
+  <div class="wrap">
+    <span>{dateStr}</span>
+    <a href="/about/#disclosure">広告・アフィリエイトに関する開示</a>
+  </div>
+</div>
+<header class="site">
+  <div class="wrap">
+    <a href="/" class="logo"><span class="mark"></span>ファクトレンズ</a>
+    <nav class="primary">
+      {cats.map((c) => <a href={`/category/${encodeURIComponent(c)}/`}>{c}</a>)}
+    </nav>
+    <div class="header-actions">
+      <a href="/search/" class="search-link" aria-label="記事を検索">🔍</a>
+      <a href="#news" class="btn btn-primary">無料で購読</a>
+    </div>
+    <button class="menu-toggle" aria-label="メニュー">☰</button>
+  </div>
+</header>

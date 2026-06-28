@@ -1,0 +1,28 @@
+---
+const accentMap: Record<string, string> = {
+  teal: 'g-teal', violet: 'g-violet', amber: 'g-amber',
+  green: 'g-green', blue: 'g-blue', gold: 'g-gold',
+};
+interface Props {
+  href: string;
+  title: string;
+  category: string;
+  excerpt: string;
+  sourceCount: number;
+  readMinutes: number;
+  accent?: string;
+}
+const { href, title, category, excerpt, sourceCount, readMinutes, accent = 'teal' } = Astro.props;
+---
+<a href={href} class="card">
+  <div class={`ct ${accentMap[accent] ?? 'g-teal'}`}><span class="tag">{category}</span></div>
+  <div class="cb">
+    <h3>{title}</h3>
+    <p>{excerpt}</p>
+    <div class="meta">
+      <span class="verified">検証済</span>
+      <span>ソース{sourceCount}件</span>
+      <span>{readMinutes}分</span>
+    </div>
+  </div>
+</a>

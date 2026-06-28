@@ -1,0 +1,61 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="記事を検索｜ファクトレンズ" description="ファクトレンズの記事をキーワードで検索します。">
+  <section class="section">
+    <div class="wrap" style="max-width:760px">
+      <div class="sec-head" style="display:block;margin-bottom:16px">
+        <h2>記事を<span class="accent">検索</span></h2>
+      </div>
+      <p class="hint" style="color:var(--muted);font-size:.9rem;margin-bottom:18px">タイトル・要約・カテゴリからキーワードで探せます。</p>
+
+      <div style="position:relative">
+        <input id="q" type="text" placeholder="キーワードを入力（例：物価、ファクトチェック）"
+          autocomplete="off"
+          style="width:100%;font-family:inherit;font-size:1rem;border:1px solid var(--hairline);border-radius:12px;padding:15px 18px;background:var(--surface)" />
+      </div>
+
+      <div id="status" style="margin:16px 0;font-size:.84rem;color:var(--muted)"></div>
+      <div id="results" class="grid" style="grid-template-columns:1fr"></div>
+    </div>
+  </section>
+
+  <script is:inline>
+    (async function () {
+      const q = document.getElementById('q');
+      const results = document.getElementById('results');
+      const status = document.getElementById('status');
+      let data = [];
+      try {
+        const res = await fetch('/search.json');
+        data = await res.json();
+        status.textContent = `全${data.length}記事から検索できます。`;
+      } catch (e) {
+        status.textContent = '検索インデックスの読み込みに失敗しました。';
+      }
+
+      const accent = { '国内':'g-blue','国際':'g-violet','経済':'g-teal','テクノロジー':'g-amber','解説':'g-green' };
+
+      function render(list) {
+        if (!q.value.trim()) { results.innerHTML=''; status.textContent = `全${data.length}記事から検索できます。`; return; }
+        if (!list.length) { results.innerHTML=''; status.textContent = '一致する記事が見つかりませんでした。'; return; }
+        status.textContent = `${list.length}件ヒットしました。`;
+        results.innerHTML = list.map(a => `
+          <a href="${a.url}" class="card">
+            <div class="ct ${accent[a.category]||'g-teal'}"><span class="tag">${a.category}</span></div>
+            <div class="cb">
+              <h3>${a.title}</h3>
+              <p>${a.excerpt}</p>
+              <div class="meta"><span class="verified">検証済</span><span>ソース${a.sourceCount}件</span><span>${a.readMinutes}分</span></div>
+            </div>
+          </a>`).join('');
+      }
+
+      q.addEventListener('input', () => {
+        const terms = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+        const hits = data.filter(a => terms.every(t => a.text.includes(t)));
+        render(hits);
+      });
+    })();
+  </script>
+</Base>

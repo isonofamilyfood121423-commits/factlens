@@ -1,0 +1,38 @@
+<!DOCTYPE html><html lang="ja"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>記事を検索｜ファクトレンズ</title><meta name="description" content="ファクトレンズの記事をキーワードで検索します。"><link rel="canonical" href="https://example.com/search/"><!-- OGP (Facebook / LINE / Slack など) --><meta property="og:type" content="website"><meta property="og:site_name" content="ファクトレンズ"><meta property="og:title" content="記事を検索｜ファクトレンズ"><meta property="og:description" content="ファクトレンズの記事をキーワードで検索します。"><meta property="og:url" content="https://example.com/search/"><meta property="og:image" content="https://example.com/ogp-default.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="ja_JP"><!-- Twitter / X --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="記事を検索｜ファクトレンズ"><meta name="twitter:description" content="ファクトレンズの記事をキーワードで検索します。"><meta name="twitter:image" content="https://example.com/ogp-default.png"><link rel="alternate" type="application/rss+xml" title="ファクトレンズ RSS" href="/rss.xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@600;700;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/about.PnhZ6vrU.css"></head> <body> <div class="topbar"> <div class="wrap"> <span>2026年6月28日(日)</span> <a href="/about/#disclosure">広告・アフィリエイトに関する開示</a> </div> </div> <header class="site"> <div class="wrap"> <a href="/" class="logo"><span class="mark"></span>ファクトレンズ</a> <nav class="primary"> <a href="/category/%E5%9B%BD%E5%86%85/">国内</a><a href="/category/%E5%9B%BD%E9%9A%9B/">国際</a><a href="/category/%E7%B5%8C%E6%B8%88/">経済</a><a href="/category/%E3%83%86%E3%82%AF%E3%83%8E%E3%83%AD%E3%82%B8%E3%83%BC/">テクノロジー</a><a href="/category/%E8%A7%A3%E8%AA%AC/">解説</a> </nav> <div class="header-actions"> <a href="/search/" class="search-link" aria-label="記事を検索">🔍</a> <a href="#news" class="btn btn-primary">無料で購読</a> </div> <button class="menu-toggle" aria-label="メニュー">☰</button> </div> </header> <main>  <section class="section"> <div class="wrap" style="max-width:760px"> <div class="sec-head" style="display:block;margin-bottom:16px"> <h2>記事を<span class="accent">検索</span></h2> </div> <p class="hint" style="color:var(--muted);font-size:.9rem;margin-bottom:18px">タイトル・要約・カテゴリからキーワードで探せます。</p> <div style="position:relative"> <input id="q" type="text" placeholder="キーワードを入力（例：物価、ファクトチェック）" autocomplete="off" style="width:100%;font-family:inherit;font-size:1rem;border:1px solid var(--hairline);border-radius:12px;padding:15px 18px;background:var(--surface)"> </div> <div id="status" style="margin:16px 0;font-size:.84rem;color:var(--muted)"></div> <div id="results" class="grid" style="grid-template-columns:1fr"></div> </div> </section> <script>
+    (async function () {
+      const q = document.getElementById('q');
+      const results = document.getElementById('results');
+      const status = document.getElementById('status');
+      let data = [];
+      try {
+        const res = await fetch('/search.json');
+        data = await res.json();
+        status.textContent = `全${data.length}記事から検索できます。`;
+      } catch (e) {
+        status.textContent = '検索インデックスの読み込みに失敗しました。';
+      }
+
+      const accent = { '国内':'g-blue','国際':'g-violet','経済':'g-teal','テクノロジー':'g-amber','解説':'g-green' };
+
+      function render(list) {
+        if (!q.value.trim()) { results.innerHTML=''; status.textContent = `全${data.length}記事から検索できます。`; return; }
+        if (!list.length) { results.innerHTML=''; status.textContent = '一致する記事が見つかりませんでした。'; return; }
+        status.textContent = `${list.length}件ヒットしました。`;
+        results.innerHTML = list.map(a => `
+          <a href="${a.url}" class="card">
+            <div class="ct ${accent[a.category]||'g-teal'}"><span class="tag">${a.category}</span></div>
+            <div class="cb">
+              <h3>${a.title}</h3>
+              <p>${a.excerpt}</p>
+              <div class="meta"><span class="verified">検証済</span><span>ソース${a.sourceCount}件</span><span>${a.readMinutes}分</span></div>
+            </div>
+          </a>`).join('');
+      }
+
+      q.addEventListener('input', () => {
+        const terms = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+        const hits = data.filter(a => terms.every(t => a.text.includes(t)));
+        render(hits);
+      });
+    })();
+  </script>  </main> <footer> <div class="wrap"> <div class="fgrid"> <div> <div class="flogo">ファクトレンズ</div> <p class="disclosure" id="disclosure">当サイトはアフィリエイトプログラム等による広告収益で運営されています。「PR」と表示された箇所は広告です(景品表示法・ステマ規制に基づく明示)。広告の有無は記事の評価・内容に影響を与えません。</p> </div> <div> <h5>カテゴリ</h5> <ul> <li><a href="/category/国内/">国内</a></li> <li><a href="/category/国際/">国際</a></li> <li><a href="/category/経済/">経済</a></li> <li><a href="/category/テクノロジー/">テクノロジー</a></li> </ul> </div> <div> <h5>サイトについて</h5> <ul> <li><a href="/about/">編集方針</a></li> <li><a href="/about/">運営者情報</a></li> <li><a href="/about/">お問い合わせ</a></li> </ul> </div> <div> <h5>規約</h5> <ul> <li><a href="/about/">プライバシーポリシー</a></li> <li><a href="/about/#disclosure">広告ポリシー</a></li> <li><a href="/about/">免責事項</a></li> </ul> </div> </div> <div class="fbot"> <span>© 2026 ファクトレンズ All rights reserved.</span> <span>ニュースを、ちゃんと理解する。</span> </div> </div> </footer> <script type="module">const o=document.querySelectorAll(".bar > span[data-w]"),r=new IntersectionObserver(e=>{e.forEach(t=>{t.isIntersecting&&(t.target.style.width=t.target.dataset.w,r.unobserve(t.target))})},{threshold:.4});o.forEach(e=>{e.style.width="0",r.observe(e)});const n=document.querySelector(".menu-toggle");n?.addEventListener("click",()=>{const e=document.querySelector("nav.primary");if(!e)return;const t=e.style.display==="flex";e.style.cssText=t?"":"display:flex;position:absolute;top:74px;left:0;right:0;flex-direction:column;background:var(--surface);padding:16px 24px;border-bottom:1px solid var(--hairline);gap:6px"});</script> </body> </html>

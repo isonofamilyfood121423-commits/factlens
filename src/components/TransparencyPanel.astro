@@ -1,0 +1,40 @@
+---
+interface Source { label: string; url?: string }
+interface Props {
+  sourceScore: number;
+  primarySourceRatio: number;
+  sourceCount: number;
+  opposingViews: number;
+  sources: Source[];
+}
+const { sourceScore, primarySourceRatio, sourceCount, opposingViews, sources } = Astro.props;
+---
+<aside class="transparency">
+  <span class="eyebrow">出典トランスペアレンシー</span>
+  <h3><span class="dot"></span>この記事の信頼性</h3>
+
+  <div class="meter-row">
+    <div class="label"><span>ソース照合スコア</span><b>{sourceScore}<span style="font-weight:400">/100</span></b></div>
+    <div class="bar"><span data-w={`${sourceScore}%`}></span></div>
+  </div>
+  <div class="meter-row">
+    <div class="label"><span>一次ソース比率</span><b>{primarySourceRatio}%</b></div>
+    <div class="bar"><span data-w={`${primarySourceRatio}%`}></span></div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="n">{sourceCount}</div><div class="t">参照した情報源</div></div>
+    <div class="stat"><div class="n">{opposingViews}</div><div class="t">併記した対立見解</div></div>
+  </div>
+
+  {sources.length > 0 && (
+    <div class="sources">
+      <span class="eyebrow">主な参照ソース</span>
+      <ul>
+        {sources.map((s) => (
+          <li>{s.url ? <a href={s.url} target="_blank" rel="noopener nofollow">{s.label}</a> : s.label}</li>
+        ))}
+      </ul>
+    </div>
+  )}
+</aside>

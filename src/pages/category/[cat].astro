@@ -1,0 +1,41 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+
+export async function getStaticPaths() {
+  const cats = ['国内', '国際', '経済', 'テクノロジー', '解説'];
+  return cats.map((cat) => ({ params: { cat }, props: { cat } }));
+}
+
+const { cat } = Astro.props;
+const articles = (await getCollection('articles', (e) => e.data.status === 'verified' && e.data.category === cat))
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime());
+---
+<Base title={`${cat}の記事｜ファクトレンズ`}>
+  <section class="section">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2><span class="accent">{cat}</span>の記事</h2>
+        <a href="/" class="more">← ホームへ</a>
+      </div>
+      {articles.length > 0 ? (
+        <div class="grid">
+          {articles.map((a) => (
+            <ArticleCard
+              href={`/articles/${a.id}/`}
+              title={a.data.title}
+              category={a.data.category}
+              excerpt={a.data.excerpt}
+              sourceCount={a.data.sourceCount}
+              readMinutes={a.data.readMinutes}
+              accent={a.data.accent}
+            />
+          ))}
+        </div>
+      ) : (
+        <p style="color:var(--muted)">このカテゴリの記事はまだありません。</p>
+      )}
+    </div>
+  </section>
+</Base>

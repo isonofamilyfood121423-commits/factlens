@@ -1,0 +1,115 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import TransparencyPanel from '../components/TransparencyPanel.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+
+const accentMap: Record<string, string> = {
+  teal: 'g-teal', violet: 'g-violet', amber: 'g-amber',
+  green: 'g-green', blue: 'g-blue', gold: 'g-gold',
+};
+
+// status === 'verified' のみ公開
+const all = (await getCollection('articles', (e) => e.data.status === 'verified'))
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime());
+
+const featured = all.find((a) => a.data.featured) ?? all[0];
+const rest = all.filter((a) => a.id !== featured?.id).slice(0, 6);
+const fd = featured?.data;
+---
+<Base title="ファクトレンズ｜ニュースを、ちゃんと理解する。">
+  {featured && fd && (
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <article class="feature">
+          <a href={`/articles/${featured.id}/`} class={`thumb ${accentMap[fd.accent] ?? 'g-teal'}`} style="text-decoration:none">
+            <span class="deco"></span>
+            <span class="tag">徹底解説 ・ {fd.category}</span>
+          </a>
+          <div class="body">
+            <span class="eyebrow">今週の深掘り</span>
+            <h1 class="serif"><a href={`/articles/${featured.id}/`}>{fd.title}</a></h1>
+            <p class="lead">{fd.excerpt}</p>
+            <div class="byline">
+              <span class="av"></span>
+              <span>編集部 ・ {fd.readMinutes}分で読める ・ 最終検証 {fd.verifiedDate.toLocaleDateString('ja-JP')}</span>
+            </div>
+          </div>
+        </article>
+
+        <TransparencyPanel
+          sourceScore={fd.sourceScore}
+          primarySourceRatio={fd.primarySourceRatio}
+          sourceCount={fd.sourceCount}
+          opposingViews={fd.opposingViews}
+          sources={fd.sources}
+        />
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>最新の<span class="accent">解説</span>記事</h2>
+        <a href="/category/解説/" class="more">すべて見る →</a>
+      </div>
+      {rest.length > 0 ? (
+        <div class="grid">
+          {rest.map((a) => (
+            <ArticleCard
+              href={`/articles/${a.id}/`}
+              title={a.data.title}
+              category={a.data.category}
+              excerpt={a.data.excerpt}
+              sourceCount={a.data.sourceCount}
+              readMinutes={a.data.readMinutes}
+              accent={a.data.accent}
+            />
+          ))}
+        </div>
+      ) : (
+        <p style="color:var(--muted)">記事はまだありません。<code>src/content/articles/</code> にMarkdownを追加し、フロントマターの <code>status</code> を <code>verified</code> にすると公開されます。</p>
+      )}
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="pr-slot">
+        <span class="pr-label">PR</span>
+        <div class="pr-body">
+          <h4>ニュースをもっと深く読むための関連書籍・サービス</h4>
+          <p>記事テーマに関連した書籍・オンライン講座・情報ツールをここで紹介します(アフィリエイト枠)。広告であることを明示し、編集記事とは明確に分離します。</p>
+        </div>
+        <a href="#" class="btn btn-primary" rel="nofollow sponsored">詳細を見る</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust">
+    <div class="wrap">
+      <span class="eyebrow">編集方針</span>
+      <h2>私たちの3つの約束</h2>
+      <div class="promises">
+        <div class="promise"><div class="num">01</div><h4>事実と意見を分ける</h4><p>確認できた事実、推測、編集部の見解を文章中で明確にラベリング。どこまでが裏取り済みかを読者が判断できるようにします。</p></div>
+        <div class="promise"><div class="num">02</div><h4>出典をすべて開示する</h4><p>参照した一次ソースへのリンクと最終検証日を全記事に表示。あとから誰でも検証できる状態を保ちます。</p></div>
+        <div class="promise"><div class="num">03</div><h4>対立する見方も載せる</h4><p>結論を一方向に誘導しません。争点には複数の立場の根拠を併記し、判断は読者に委ねます。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="news" id="news">
+    <div class="wrap">
+      <div class="news-box">
+        <span class="eyebrow">ニュースレター</span>
+        <h2>週1回、今週の要点だけ。</h2>
+        <p>1週間の重要ニュースを、争点と出典つきで5分で読める形に。情報の洪水に疲れたあなたへ。</p>
+        <div class="nform">
+          <input type="email" placeholder="メールアドレス" aria-label="メールアドレス" />
+          <button class="btn btn-primary">登録する</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

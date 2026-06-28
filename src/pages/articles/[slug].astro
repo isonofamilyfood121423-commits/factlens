@@ -1,0 +1,95 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import TransparencyPanel from '../../components/TransparencyPanel.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+
+export async function getStaticPaths() {
+  const articles = await getCollection('articles', (e) => e.data.status === 'verified');
+  return articles.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+
+// 関連記事：同じカテゴリ → 足りなければ新着で補完（自分は除外、最大3件）
+const all = (await getCollection('articles', (e) => e.data.status === 'verified' && e.id !== entry.id))
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime());
+const sameCat = all.filter((a) => a.data.category === d.category);
+const related = [...sameCat, ...all.filter((a) => a.data.category !== d.category)].slice(0, 3);
+---
+<Base
+  title={`${d.title}｜ファクトレンズ`}
+  description={d.excerpt}
+  type="article"
+  image={d.ogImage ?? '/ogp-default.png'}
+>
+  <section class="article-head">
+    <div class="wrap">
+      <nav class="breadcrumb">
+        <a href="/">ホーム</a> ／ <a href={`/category/${encodeURIComponent(d.category)}/`}>{d.category}</a> ／ <span>記事</span>
+      </nav>
+      <span class="cat">{d.category}</span>
+      <h1 class="serif">{d.title}</h1>
+      <p class="sub">{d.excerpt}</p>
+      <div class="article-meta">
+        <span class="av"></span>
+        <span>編集部</span>
+        <span>公開 {d.publishDate.toLocaleDateString('ja-JP')}</span>
+        <span class="verified">最終検証 {d.verifiedDate.toLocaleDateString('ja-JP')}</span>
+        <span>{d.readMinutes}分で読める</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="article-layout">
+      <article class="prose">
+        <Content />
+        <div class="article-foot">
+          <p><strong>この記事の検証について：</strong>本記事は上記の参照ソースを編集部が照合し、{d.verifiedDate.toLocaleDateString('ja-JP')}時点の情報で確認しています。事実に誤りを見つけた場合は訂正フォームよりご連絡ください。確認のうえ更新履歴に記録します。</p>
+        </div>
+      </article>
+
+      <div class="aside-sticky">
+        <TransparencyPanel
+          sourceScore={d.sourceScore}
+          primarySourceRatio={d.primarySourceRatio}
+          sourceCount={d.sourceCount}
+          opposingViews={d.opposingViews}
+          sources={d.sources}
+        />
+        <div class="pr-card">
+          <span class="pr-label">PR</span>
+          <h4>関連するおすすめ</h4>
+          <p>このテーマをさらに深く知るための書籍・サービス(アフィリエイト)。</p>
+          <a href="#" class="btn btn-primary" rel="nofollow sponsored">チェックする</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {related.length > 0 && (
+    <section class="section" style="border-top:1px solid var(--hairline);margin-top:10px">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2>あわせて読みたい<span class="accent">関連記事</span></h2>
+        </div>
+        <div class="grid">
+          {related.map((a) => (
+            <ArticleCard
+              href={`/articles/${a.id}/`}
+              title={a.data.title}
+              category={a.data.category}
+              excerpt={a.data.excerpt}
+              sourceCount={a.data.sourceCount}
+              readMinutes={a.data.readMinutes}
+              accent={a.data.accent}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+</Base>

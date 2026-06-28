@@ -1,0 +1,85 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;        // OGP画像のパス（/public 基準。例: "/ogp-default.png"）
+  type?: string;         // "website" か "article"
+}
+const {
+  title,
+  description = '時事・国内外情勢を、複数の一次ソースを照合して分かりやすく解説。出典と検証日をすべて公開する透明性重視のニュース解説メディア。',
+  image = '/ogp-default.png',
+  type = 'website',
+} = Astro.props;
+
+// 絶対URLに変換（OGPは絶対URLが必要）。Astro.site は astro.config.mjs の site から取得。
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL(image, Astro.site).href;
+const siteName = 'ファクトレンズ';
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+
+  <!-- OGP (Facebook / LINE / Slack など) -->
+  <meta property="og:type" content={type} />
+  <meta property="og:site_name" content={siteName} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="ja_JP" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+
+  <link rel="alternate" type="application/rss+xml" title="ファクトレンズ RSS" href="/rss.xml" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@600;700;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <Header />
+  <main>
+    <slot />
+  </main>
+  <Footer />
+  <script>
+    // 透明性メーターのアニメーション
+    const bars = document.querySelectorAll<HTMLElement>('.bar > span[data-w]');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          (e.target as HTMLElement).style.width = (e.target as HTMLElement).dataset.w!;
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.4 });
+    bars.forEach((b) => { b.style.width = '0'; io.observe(b); });
+
+    // モバイルメニュー
+    const toggle = document.querySelector('.menu-toggle');
+    toggle?.addEventListener('click', () => {
+      const nav = document.querySelector<HTMLElement>('nav.primary');
+      if (!nav) return;
+      const open = nav.style.display === 'flex';
+      nav.style.cssText = open ? '' : 'display:flex;position:absolute;top:74px;left:0;right:0;flex-direction:column;background:var(--surface);padding:16px 24px;border-bottom:1px solid var(--hairline);gap:6px';
+    });
+  </script>
+</body>
+</html>
